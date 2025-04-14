@@ -1,0 +1,68 @@
+# Notion API OpenAPI schema for GPT integration
+
+openapi_text = """openapi: 3.1.0
+info:
+  title: Notion API for GPT
+  version: 1.0.0
+  description: Query Notion databases and read case entries.
+servers:
+  - url: https://api.notion.com/v1
+paths:
+  /databases:
+    get:
+      summary: List databases
+      operationId: listDatabases
+      parameters: []
+      responses:
+        '200':
+          description: A list of databases
+  /databases/{database_id}/query:
+    post:
+      summary: Query a database
+      operationId: queryDatabase
+      parameters:
+        - name: database_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filter:
+                  type: object
+      responses:
+        '200':
+          description: Results of the query
+  /pages/{page_id}:
+    get:
+      summary: Get a Notion page
+      operationId: getPage
+      parameters:
+        - name: page_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Page data
+components:
+  securitySchemes:
+    NotionToken:
+      type: apiKey
+      in: header
+      name: Authorization
+security:
+  - NotionToken: []
+"""
+
+file_path = "/mnt/data/notion_api_openapi.yaml"
+with open(file_path, "w") as file:
+    file.write(openapi_text)
+
+file_path
