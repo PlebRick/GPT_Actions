@@ -1,8 +1,10 @@
 openapi: 3.1.0
 info:
   title: Notion API for GPT
-  version: 1.1.0
-  description: Query and update Notion databases for Start9 support automation.
+  version: 2.0.0
+  description: >
+    Full-access Notion API schema for reading, writing, updating,
+    commenting, and searching databases/pages.
 
 servers:
   - url: https://api.notion.com/v1
@@ -13,15 +15,39 @@ paths:
       summary: List databases
       operationId: listDatabases
       parameters:
-        - name: Notion-Version
-          in: header
-          required: true
-          schema:
-            type: string
-          example: "2022-06-28"
+        - $ref: '#/components/parameters/NotionVersion'
       responses:
         '200':
           description: A list of databases
+          # Could reference a component schema here for array of database objects
+        '401':
+          description: Unauthorized, invalid or missing token
+        '403':
+          description: Forbidden, integration missing access
+        '429':
+          description: Rate limited
+
+  /databases/{database_id}:
+    get:
+      summary: Retrieve a database
+      operationId: retrieveDatabase
+      parameters:
+        - name: database_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/NotionVersion'
+      responses:
+        '200':
+          description: The database object
+          # Could reference a component schema representing a single Notion database
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access to this database not granted
+        '404':
+          description: Database not found
 
   /databases/{database_id}/query:
     post:
@@ -33,12 +59,30 @@ paths:
           required: true
           schema:
             type: string
-        - name: Notion-Version
-          in: header
-          required: true
-          schema:
-            type: string
-          example: "2022-06-28"
+        - $ref: '#/components/parameters/NotionVersion'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatabaseQueryRequest'
+      responses:
+        '200':
+          description: Results of the query
+          # Could reference a 'DatabaseQueryResponse' schema
+        '401':
+          description: Unauthorized
+        '403':
+          description: Access to this database not granted
+        '404':
+          description: Database not found
+
+  /search:
+    post:
+      summary: Search across the workspace
+      operationId: searchWorkspace
+      parameters:
+        - $ref: '#/components/parameters/NotionVersion'
       requestBody:
         required: false
         content:
@@ -46,11 +90,60 @@ paths:
             schema:
               type: object
               properties:
+                query:
+                  type: string
+                  description: Search string
                 filter:
                   type: object
+                  properties:
+                    value:
+                      type: string
+                      description: 'Either "page" or "database"'
+                    property:
+                      type: string
+                      description: '"object"'
+                sort:
+                  type: object
+                  properties:
+                    direction:
+                      type: string
+                      enum: [ascending, descending]
+                    timestamp:
+                      type: string
+                      enum: [last_edited_time]
       responses:
         '200':
-          description: Results of the query
+          description: Search results
+          # Typically an array of page or database objects
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '429':
+          description: Rate limited
+
+  /pages:
+    post:
+      summary: Create a new page in a database
+      operationId: createPage
+      parameters:
+        - $ref: '#/components/parameters/NotionVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PageCreateRequest'
+      responses:
+        '200':
+          description: Successfully created the page
+          # Could reference a 'PageObject' schema
+        '401':
+          description: Unauthorized
+        '403':
+          description: Integration missing Write access
+        '429':
+          description: Rate limited
 
   /pages/{page_id}:
     get:
@@ -62,15 +155,16 @@ paths:
           required: true
           schema:
             type: string
-        - name: Notion-Version
-          in: header
-          required: true
-          schema:
-            type: string
-          example: "2022-06-28"
+        - $ref: '#/components/parameters/NotionVersion'
       responses:
         '200':
           description: Page data
+        '401':
+          description: Unauthorized
+        '403':
+          description: Integration missing read access
+        '404':
+          description: Page not found
 
     patch:
       summary: Update a Notion page
@@ -81,33 +175,176 @@ paths:
           required: true
           schema:
             type: string
-        - name: Notion-Version
-          in: header
-          required: true
-          schema:
-            type: string
-          example: "2022-06-28"
+        - $ref: '#/components/parameters/NotionVersion'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                properties:
-                  type: object
-                  description: A dictionary of properties to update
+              $ref: '#/components/schemas/PageUpdateRequest'
       responses:
         '200':
           description: Successfully updated the Notion page
+        '401':
+          description: Unauthorized
+        '403':
+          description: Integration missing Update access
+        '404':
+          description: Page not found
+
+    delete:
+      summary: Archive (delete) a Notion page
+      operationId: deletePage
+      parameters:
+        - name: page_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/NotionVersion'
+      responses:
+        '200':
+          description: Page archived successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Integration missing Update access
+        '404':
+          description: Page not found
+
+  /comments:
+    post:
+      summary: Insert a comment
+      operationId: insertComment
+      parameters:
+        - $ref: '#/components/parameters/NotionVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+      responses:
+        '200':
+          description: Comment added
+
+  /comments/{comment_id}:
+    get:
+      summary: Read a comment
+      operationId: readComment
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/NotionVersion'
+      responses:
+        '200':
+          description: Comment content
+        '404':
+          description: Comment not found
 
 components:
+  parameters:
+    NotionVersion:
+      name: Notion-Version
+      in: header
+      required: true
+      schema:
+        type: string
+        example: "2022-06-28"
+  
   securitySchemes:
     NotionToken:
-      type: apiKey
-      in: header
-      name: Authorization
-  schemas: {}
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  # or just "Bearer"
+      description: >
+        Use your Notion secret (secret_xxx) as a Bearer token:
+        "Authorization: Bearer secret_XXXX"
+
+  schemas:
+    DatabaseQueryRequest:
+      type: object
+      properties:
+        filter:
+          type: object
+        sorts:
+          type: array
+          items:
+            type: object
+      additionalProperties: false
+
+    PageCreateRequest:
+      type: object
+      properties:
+        parent:
+          type: object
+          properties:
+            database_id:
+              type: string
+            page_id:
+              type: string
+          description: >
+            Either database_id or page_id is required.
+        properties:
+          type: object
+          description: >
+            Dictionary of page properties. Each key is a property name, value is
+            the property type object (title, select, date, etc.)
+        children:
+          type: array
+          items:
+            type: object
+          description: >
+            Optional array of block objects to include as children of this page.
+      required:
+        - parent
+        - properties
+      additionalProperties: false
+
+    PageUpdateRequest:
+      type: object
+      properties:
+        properties:
+          type: object
+          description: >
+            A dictionary of properties to update, keyed by property name
+        archived:
+          type: boolean
+          description: >
+            If true, the page is archived (deleted). If false, it’s unarchived.
+      additionalProperties: false
+
+    CommentCreateRequest:
+      type: object
+      properties:
+        parent:
+          type: object
+          properties:
+            page_id:
+              type: string
+            block_id:
+              type: string
+          description: >
+            The page_id or block_id this comment is attached to.
+        rich_text:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              text:
+                type: object
+                properties:
+                  content:
+                    type: string
+      required:
+        - parent
+        - rich_text
+      additionalProperties: false
 
 security:
   - NotionToken: []
