@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
   title: Notion API for GPT
-  version: 1.0.0
-  description: Query Notion databases and read case entries.
+  version: 1.1.0
+  description: Query and update Notion databases for Start9 support automation.
 servers:
   - url: https://api.notion.com/v1
+
 paths:
   /databases:
     get:
@@ -20,6 +21,7 @@ paths:
       responses:
         '200':
           description: A list of databases
+
   /databases/{database_id}/query:
     post:
       summary: Query a database
@@ -48,6 +50,7 @@ paths:
       responses:
         '200':
           description: Results of the query
+
   /pages/{page_id}:
     get:
       summary: Get a Notion page
@@ -67,6 +70,35 @@ paths:
       responses:
         '200':
           description: Page data
+
+    patch:
+      summary: Update a Notion page
+      operationId: updatePage
+      parameters:
+        - name: page_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                properties:
+                  type: object
+      responses:
+        '200':
+          description: Successfully updated the Notion page
+
 components:
   securitySchemes:
     NotionToken:
@@ -74,5 +106,6 @@ components:
       in: header
       name: Authorization
   schemas: {}
+
 security:
   - NotionToken: []
