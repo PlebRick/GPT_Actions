@@ -55,5 +55,6 @@ components:
       type: apiKey
       in: header
       name: Authorization
+  schemas: {}
 security:
   - NotionToken: []
