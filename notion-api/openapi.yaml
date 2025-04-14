@@ -1,10 +1,10 @@
 openapi: 3.1.0
 info:
   title: Notion API for GPT
-  version: 2.1.2
+  version: 2.1.1
   description: >
-    Reliable Notion API schema for GPTs — fixed Notion-Version header injection and inlined all request schemas.
-
+    Full-access Notion API schema for reading, writing, updating, commenting,
+    and interacting with pages and databases for GPT integration.
 servers:
   - url: https://api.notion.com/v1
 
@@ -75,11 +75,12 @@ paths:
                     type: object
       responses:
         '200':
-          description: Query results
+          description: Results of the query
 
   /pages:
     post:
       summary: Create a new page
+      description: Create a Notion page/row in a specific database using parent and properties.
       operationId: createSupportPage
       parameters:
         - name: Notion-Version
@@ -87,36 +88,16 @@ paths:
           required: true
           schema:
             type: string
-          example: "2022-06-28"
+            example: "2022-06-28"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - parent
-                - properties
-              properties:
-                parent:
-                  type: object
-                  properties:
-                    database_id:
-                      type: string
-                      example: "1d543f02ce93806c9e86efab8c77abe1"
-                    page_id:
-                      type: string
-                      example: "optional-page-id-if-creating-subpage"
-                properties:
-                  type: object
-                  additionalProperties: true
-                children:
-                  type: array
-                  items:
-                    type: object
+              $ref: '#/components/schemas/PageCreate'
       responses:
         '200':
-          description: Page created
+          description: Successfully created the page
 
   /pages/{page_id}:
     get:
@@ -162,14 +143,16 @@ paths:
               properties:
                 properties:
                   type: object
+                  description: A dictionary of properties to update
                 archived:
                   type: boolean
+                  description: Set to true to archive the page
       responses:
         '200':
-          description: Page updated
+          description: Successfully updated the Notion page
 
     delete:
-      summary: Delete (archive) a Notion page
+      summary: Archive (delete) a Notion page
       operationId: deletePage
       parameters:
         - name: page_id
@@ -185,7 +168,7 @@ paths:
           example: "2022-06-28"
       responses:
         '200':
-          description: Page archived
+          description: Page archived successfully
 
   /comments:
     post:
@@ -207,6 +190,7 @@ paths:
               properties:
                 parent:
                   type: object
+                  description: An object defining the parent page or block for the comment.
                 rich_text:
                   type: array
                   items:
@@ -241,13 +225,40 @@ paths:
           example: "2022-06-28"
       responses:
         '200':
-          description: Comment retrieved
+          description: Comment content
 
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+
+  schemas:
+    PageCreate:
+      type: object
+      required:
+        - parent
+        - properties
+      properties:
+        parent:
+          type: object
+          description: An object containing either a database_id or page_id for page creation.
+          properties:
+            database_id:
+              type: string
+              example: "1d543f02ce93806c9e86efab8c77abe1"
+            page_id:
+              type: string
+              example: "optional-page-id-if-creating-subpage"
+        properties:
+          type: object
+          description: Dictionary of page properties matching your Notion database.
+          additionalProperties: true
+        children:
+          type: array
+          items:
+            type: object
+          description: Optional array of block objects to include as children.
 
 security:
   - bearerAuth: []
