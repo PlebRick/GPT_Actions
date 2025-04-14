@@ -10,7 +10,8 @@ paths:
     get:
       summary: List databases
       operationId: listDatabases
-      parameters: []
+      parameters:
+        - $ref: '#/components/parameters/NotionVersionHeader'
       responses:
         '200':
           description: A list of databases
@@ -24,6 +25,7 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/NotionVersionHeader'
       requestBody:
         required: false
         content:
@@ -46,6 +48,7 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/NotionVersionHeader'
       responses:
         '200':
           description: Page data
@@ -55,6 +58,14 @@ components:
       type: apiKey
       in: header
       name: Authorization
+  parameters:
+    NotionVersionHeader:
+      name: Notion-Version
+      in: header
+      required: true
+      schema:
+        type: string
+      example: "2022-06-28"
   schemas: {}
 security:
   - NotionToken: []
