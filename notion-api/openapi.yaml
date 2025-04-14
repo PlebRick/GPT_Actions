@@ -1,10 +1,9 @@
 openapi: 3.1.0
 info:
   title: Notion API for GPT
-  version: 2.1.1
+  version: 2.1.2
   description: >
-    Full-access Notion API schema for reading, writing, updating, commenting,
-    and interacting with pages and databases for GPT integration.
+    Reliable Notion API schema for GPTs — fixed Notion-Version header injection and inlined all request schemas.
 
 servers:
   - url: https://api.notion.com/v1
@@ -15,7 +14,12 @@ paths:
       summary: List databases
       operationId: listDatabases
       parameters:
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       responses:
         '200':
           description: A list of databases
@@ -30,7 +34,12 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       responses:
         '200':
           description: Database details
@@ -45,7 +54,12 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       requestBody:
         required: false
         content:
@@ -61,14 +75,19 @@ paths:
                     type: object
       responses:
         '200':
-          description: Results of the query
+          description: Query results
 
   /pages:
     post:
       summary: Create a new page
       operationId: createSupportPage
       parameters:
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       requestBody:
         required: true
         content:
@@ -81,7 +100,6 @@ paths:
               properties:
                 parent:
                   type: object
-                  description: Must include `database_id` or `page_id`
                   properties:
                     database_id:
                       type: string
@@ -91,16 +109,14 @@ paths:
                       example: "optional-page-id-if-creating-subpage"
                 properties:
                   type: object
-                  description: Properties matching the Notion database schema.
                   additionalProperties: true
                 children:
                   type: array
                   items:
                     type: object
-                  description: Optional content blocks
       responses:
         '200':
-          description: Successfully created the page
+          description: Page created
 
   /pages/{page_id}:
     get:
@@ -112,7 +128,12 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       responses:
         '200':
           description: Page data
@@ -126,7 +147,12 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       requestBody:
         required: true
         content:
@@ -140,10 +166,10 @@ paths:
                   type: boolean
       responses:
         '200':
-          description: Successfully updated the page
+          description: Page updated
 
     delete:
-      summary: Archive a Notion page
+      summary: Delete (archive) a Notion page
       operationId: deletePage
       parameters:
         - name: page_id
@@ -151,7 +177,12 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       responses:
         '200':
           description: Page archived
@@ -161,7 +192,12 @@ paths:
       summary: Insert a comment
       operationId: insertComment
       parameters:
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       requestBody:
         required: true
         content:
@@ -197,25 +233,21 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/NotionVersion'
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+          example: "2022-06-28"
       responses:
         '200':
-          description: Comment content
+          description: Comment retrieved
 
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-
-  parameters:
-    NotionVersion:
-      name: Notion-Version
-      in: header
-      required: true
-      schema:
-        type: string
-        example: "2022-06-28"
 
 security:
   - bearerAuth: []
