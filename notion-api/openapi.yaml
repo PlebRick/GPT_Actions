@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Notion API for GPT
-  version: 2.1.0
+  version: 2.1.1
   description: >
     Full-access Notion API schema for reading, writing, updating, commenting,
     and interacting with pages and databases for GPT integration.
@@ -83,8 +83,8 @@ paths:
       description: Create a Notion page/row in a specific database using parent and properties.
       operationId: createSupportPage
       parameters:
-        - in: header
-          name: Notion-Version
+        - name: Notion-Version
+          in: header
           required: true
           schema:
             type: string
@@ -229,10 +229,9 @@ paths:
 
 components:
   securitySchemes:
-    NotionToken:
-      type: apiKey
-      in: header
-      name: Authorization
+    bearerAuth:
+      type: http
+      scheme: bearer
 
   schemas:
     PageCreate:
@@ -262,4 +261,4 @@ components:
           description: Optional array of block objects to include as children.
 
 security:
-  - NotionToken: []
+  - bearerAuth: []
