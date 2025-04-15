@@ -1,0 +1,618 @@
+openapi: 3.1.0
+info:
+  title: Notion API GPT Action Tools for B1ackSwan_API_GPT
+  description: "Endpoints to create pages/subpages and manage Notion blocks. Primary home page is B1ackSwan_API_GPT."
+  version: 1.1.1
+servers:
+  - url: https://api.notion.com/v1
+    description: Notion API Base URL
+
+paths:
+
+  ####################################################
+  #               ORIGINAL ENDPOINTS                 #
+  ####################################################
+
+  /pages:
+    post:
+      operationId: createPageNotion
+      summary: Create a new page in home page B1ackSwan_API_GPT
+      description: "Creates a new page under the specified parent. Use this if you need direct page creation."
+      parameters:
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parent:
+                  type: object
+                  required:
+                    - type
+                    - page_id
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - page_id
+                      description: Always page_id
+                    page_id:
+                      type: string
+                      description: ID of the parent page
+                      enum:
+                        - "B1ackSwan_API_GPT"
+                properties:
+                  type: object
+                  description: Properties of the new page, including its title
+                  properties:
+                    title:
+                      type: array
+                      description: The title of the new page
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - text
+                            description: Must be text
+                          text:
+                            type: object
+                            properties:
+                              content:
+                                type: string
+                                description: Text content of the title
+              required:
+                - parent
+                - properties
+      responses:
+        "200":
+          description: Page created
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Rate limit exceeded
+      security:
+        - bearerAuth: []
+
+  /blocks/B1ackSwan_API_GPT/children:
+    patch:
+      operationId: appendBlockNotionGPTPage
+      summary: Append blocks to home page B1ackSwan_API_GPT
+      description: "Appends child blocks to parent block with ID B1ackSwan_API_GPT."
+      parameters:
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                children:
+                  type: array
+                  description: Array of child blocks
+                  items:
+                    type: object
+                    properties:
+                      object:
+                        type: string
+                        example: block
+                      type:
+                        type: string
+                        example: heading_2
+                      heading_2:
+                        type: object
+                        properties:
+                          rich_text:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                type:
+                                  type: string
+                                  example: text
+                                text:
+                                  type: object
+                                  properties:
+                                    content:
+                                      type: string
+                                      example: Example text
+                                    link:
+                                      type: object
+                                      nullable: true
+                                      properties:
+                                        url:
+                                          type: string
+                                          example: https://example.com
+      responses:
+        "200":
+          description: Blocks appended
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Rate limit exceeded
+      security:
+        - bearerAuth: []
+
+  /blocks/{block_id}/children:
+    patch:
+      operationId: appendBlock
+      summary: Add blocks to a given block
+      parameters:
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+        - name: block_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                children:
+                  type: array
+                  description: Child blocks to append
+                  items:
+                    type: object
+                    properties:
+                      object:
+                        type: string
+                        example: block
+                      type:
+                        type: string
+                        example: heading_2
+                      heading_2:
+                        type: object
+                        properties:
+                          rich_text:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                type:
+                                  type: string
+                                  example: text
+                                text:
+                                  type: object
+                                  properties:
+                                    content:
+                                      type: string
+                                      example: More text
+                                    link:
+                                      type: object
+                                      nullable: true
+                                      properties:
+                                        url:
+                                          type: string
+                                          example: https://example.com
+      responses:
+        "200":
+          description: Blocks appended
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Rate limit exceeded
+      security:
+        - bearerAuth: []
+
+    get:
+      operationId: retrieveBlock
+      summary: Retrieve block children
+      parameters:
+        - name: block_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      responses:
+        "200":
+          description: Block children retrieved
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Rate limit exceeded
+      security:
+        - bearerAuth: []
+
+  /search:
+    post:
+      operationId: search
+      summary: Search
+      parameters:
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                filter:
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                    property:
+                      type: string
+                sort:
+                  type: object
+                  properties:
+                    direction:
+                      type: string
+                    timestamp:
+                      type: string
+      responses:
+        "200":
+          description: Search results
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Rate limit exceeded
+      security:
+        - bearerAuth: []
+
+  /subpages:
+    post:
+      operationId: createSubpage
+      summary: Create a new subpage under B1ackSwan_API_GPT
+      description: "Creates a plain subpage under B1ackSwan_API_GPT. Title is required. Optional children blocks."
+      parameters:
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  description: Title for the subpage
+                children:
+                  type: array
+                  description: Additional content blocks
+                  items:
+                    type: object
+      responses:
+        "200":
+          description: Subpage created
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Rate limit exceeded
+      security:
+        - bearerAuth: []
+
+  ####################################################
+  #            NEW DATABASE-RELATED ENDPOINTS        #
+  ####################################################
+
+  /pages/{page_id}:
+    patch:
+      operationId: updatePage
+      summary: Update an existing page or row
+      description: "Updates page properties or row fields in a DB."
+      parameters:
+        - name: page_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The page or row ID
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                properties:
+                  type: object
+                  description: Updated fields
+      responses:
+        "200":
+          description: Page/row updated
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+        "429":
+          description: Too many requests
+      security:
+        - bearerAuth: []
+
+  /databases:
+    post:
+      operationId: createDatabase
+      summary: Create a new database
+      description: "Create a DB under a page by providing parent.page_id."
+      parameters:
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parent:
+                  type: object
+                  required:
+                    - type
+                    - page_id
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - page_id
+                    page_id:
+                      type: string
+                      description: The page ID for new DB
+                title:
+                  type: array
+                  description: DB title as an array of text objects
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - text
+                      text:
+                        type: object
+                        properties:
+                          content:
+                            type: string
+                properties:
+                  type: object
+                  description: DB schema properties
+      responses:
+        "200":
+          description: Database created
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+        "429":
+          description: Too many requests
+      security:
+        - bearerAuth: []
+
+  /databases/{database_id}:
+    get:
+      operationId: retrieveDatabase
+      summary: Retrieve a database
+      description: "Get schema/properties for a DB."
+      parameters:
+        - name: database_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      responses:
+        "200":
+          description: DB schema retrieved
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+        "429":
+          description: Too many requests
+      security:
+        - bearerAuth: []
+
+    patch:
+      operationId: updateDatabase
+      summary: Update a database
+      description: "Modify DB title or columns."
+      parameters:
+        - name: database_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - text
+                      text:
+                        type: object
+                        properties:
+                          content:
+                            type: string
+                properties:
+                  type: object
+                  description: Updated DB schema fields
+      responses:
+        "200":
+          description: DB updated
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+        "429":
+          description: Too many requests
+      security:
+        - bearerAuth: []
+
+  /databases/{database_id}/rows:
+    post:
+      operationId: createRowInDatabase
+      summary: Create a row in a Notion DB
+      description: "Creates a row by providing properties that match the DB schema."
+      parameters:
+        - name: database_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The DB ID
+        - name: Notion-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "2022-06-28"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                properties:
+                  type: object
+                  description: Row fields
+      responses:
+        "200":
+          description: Row created
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+        "429":
+          description: Too many requests
+      security:
+        - bearerAuth: []
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas: {}
